@@ -124,23 +124,31 @@ VM* kvm_init(uint8_t code[], size_t len) {
   if(vmfd < 0) pexit("ioctl(KVM_CREATE_VM)");
   char *mem = mmap(0,
     MEM_SIZE,
-    PROT_READ | PROT_WRITE,
+    PROT_READ | PROT_WRITE | PROT_EXEC,
     MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE,
     -1, 0);
   if(mem == NULL) pexit("mmap(MEM_SIZE)");
-  int entry = 0x0010000c;//elf_entry_addr(hdr);
+//  int entry = 0x00100000;//elf_entry_addr(hdr);
+  int entry = 0x00000000;//elf_entry_addr(hdr);
 
   //  printf("offset %u, roundup %u\n", offset, round_up_to_page(s.objsz));
-  memcpy(mem + 0x00100000, s[0].mem, s[0].objsz);
+  memcpy(mem + 0, s[0].mem, s[0].objsz);
+//  memcpy(mem + 0x00100000, s[0].mem, s[0].objsz);
 //  printf("offsetasd %u, roundup %u\n", offset, round_up_to_page(s.objsz));
-  memset(mem + 0x00100000 + s[0].objsz, 0, s[0].sz - s[0].objsz);
+  memset(mem + 0 + s[0].objsz, 0, s[0].sz - s[0].objsz);
+//  memset(mem + 0x00100000 + s[0].objsz, 0, s[0].sz - s[0].objsz);
 
-  memcpy(mem + 0x00102000, s[1].mem, s[1].objsz);
-  memset(mem + 0x00102000 + s[1].objsz, 0, s[1].sz - s[1].objsz);
+  memcpy(mem + 0x00002000, s[1].mem, s[1].objsz);
+//  memcpy(mem + 0x00102000, s[1].mem, s[1].objsz);
+  memset(mem + 0x00002000 + s[1].objsz, 0, s[1].sz - s[1].objsz);
+//  memset(mem + 0x00102000 + s[1].objsz, 0, s[1].sz - s[1].objsz);
 
-  u8_t * add = mem + 0x0010000c;
-  u8_t * add2 = s[0].mem + 0xc;
-  printf("\t%x\t%x\n", *add, *add2);
+  u8_t * add = mem + 0x000000;
+  u8_t * add2 = s[0].mem + 0x0;
+  printf("\t%x\t%x\t%x\n", *add, *add2, mem);
+  printf("\t%x\t%x\t%x\n", *(add+1), *(add2+1), mem);
+//  typedef void (*fn_t)(void);
+//  ((fn_t)add)();
 
 //objszWTF
 //  memcpy(mem, s.mem + round_to_page(s.objsz), offset);
@@ -214,7 +222,7 @@ void execute(VM* vm) {
       error("KVM_EXIT_INTERNAL_ERROR: suberror = 0x%x\n",
         vm->run->internal.suberror);
     case KVM_EXIT_SHUTDOWN:
-      error("KVM_EXIT_SHUTDOWN\n");
+      error("KVM_EXIT_SHUTDOWNs\n");
     default:
       error("Unhandled reason: %d\n", vm->run->exit_reason);
     }

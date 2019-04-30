@@ -55,14 +55,14 @@ static void out(uint16_t port, uint32_t value) {
 
 
 void
-kmain(void) {
-//kmain(int a, int b, int c) {
+//kmain(void) {
+kmain(int a, int b, int c) {
 //	const char *p;
 //	char *test = "l";
 //	for (p = "Hello, world!\n"; *p; ++p){
 //		hypercall(0xE9, *p);
-//		outb(0xE9, *p);
-        while(1);
+//		out(0xE9, *p);
+//        while(1);
 //        out(0xE9, *test);
 //		while(1);
 //	}
@@ -70,7 +70,7 @@ kmain(void) {
 //	*(long *) 0x400 = 42;
 
 //	for (;;)
-//		asm("hlt" : /* empty */ : "a" (42) : "memory");
+		asm("hlt" : /* empty */ : "a" (42) : "memory");
 }
 /*
 void

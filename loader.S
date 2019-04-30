@@ -17,21 +17,23 @@
 .set STACKSIZE, 0x1000
 .comm stack, (STACKSIZE * NUM_CPU), 0x1000
 
+.text
 .globl loader
 loader:
-    jmp loader
+//    jmp loader
 	mov 	$(stack + STACKSIZE - STK_INFO_OFF), %esp
 //    jmp loader
 	movl	%eax, %ecx
 //    jmp loader
 	movl    %cr4, %eax
 //    jmp loader
-	orl     $((1<<4) | (1<<7)), %eax
-//    jmp loader
+	movl    $(boot_comp_pgd-COS_MEM_KERN_START_VA), %ebx
+	movl    %ebx, %cr3
+//	jmp loader
+    orl     $((1<<4) | (1<<7)), %eax
+ //   jmp loader
 	movl    %eax, %cr4
-//    jmp loader
-	movl    $(boot_comp_pgd-COS_MEM_KERN_START_VA), %eax
-	movl    %eax, %cr3
+//   jmp loader
 //    jmp loader
 
 	# Turn on paging.
@@ -41,7 +43,7 @@ loader:
 //    jmp loader
 	movl    %eax, %cr0
 //    jmp loader
-	cli
+//	cli
 //    jmp loader
 	pushl %esp
 //    jmp loader
@@ -53,7 +55,7 @@ loader:
 	pushl $0  /* empty return value as we're jmping, not calling */
 //    jmp loader
 	mov $kmain, %eax
-//    jmp loader
+//   jmp loader
 	jmp *%eax
 loader_end:
 .text
