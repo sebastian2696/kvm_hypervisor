@@ -5,16 +5,16 @@
 
 OUTPUT_FORMAT(elf32-i386)
 ENTRY (loader)
-phys = 0x0;  		/* This should be COS_MEM_KERN_PA */
-/*phys = 0x00100000;  		 This should be COS_MEM_KERN_PA */
+/*phys = 0x0;  		 This should be COS_MEM_KERN_PA */
+phys = 0x00100000;  	/*	 This should be COS_MEM_KERN_PA */
 SECTIONS {
 
-    . = 0xc0000000;	  /* This should be COS_MEM_KERN_START_VA + COS_MEM_KERN_PA */
-   /* . = 0x0;		 This should be COS_MEM_KERN_START_VA + COS_MEM_KERN_PA */
+    . = 0xc0100000;	  /* This should be COS_MEM_KERN_START_VA + COS_MEM_KERN_PA */
+   /* . = 0xc0000000;		 This should be COS_MEM_KERN_START_VA + COS_MEM_KERN_PA */
 
     .text : AT(phys) {
         code = .;
-/*        *(.multiboot)  */
+        *(.multiboot)
         *(.text)
         *(.rodata)
         . = ALIGN(4096);
