@@ -56,6 +56,33 @@ void read_file(const char *filename, uint8_t** content_ptr, size_t* size_ptr) {
   *size_ptr = size;
 }
 
+void setup_protected_mode(VM *vm)
+{
+    struct kvm_sregs sregs;
+    if(ioctl(vm->vcpufd, KVM_GET_SREGS, &sregs) < 0) pexit("ioctl(KVM_GET_SREGS)");
+    struct kvm_segment seg = {
+        .base = 0,
+        .limit = 0xffffffff,
+        .selector = 1 << 3,
+        .present = 1,
+        .type = 11, /* Code: execute, read, accessed                */
+        .dpl = 0,
+        .db = 1,
+        .s = 1, /* Code/data */
+        .l = 0,
+        .g = 1, /* 4KB granularity */
+    };
+
+    sregs.cr0 |= CR0_PE; /* enter protected mallocode */
+
+    sregs.cs = seg;
+
+    seg.type = 3; /* Data: read/write, accessed */
+    seg.selector = 2 << 3;
+    sregs.ds = sregs.es = sregs.fs = sregs.gs = sregs.ss = seg;
+    if(ioctl(vm->vcpufd, KVM_SET_SREGS, &sregs) < 0) pexit("ioctl(KVM_SET_SREGSs)");
+}
+
 /* set rip = entry point
  * set rsp = MAX_KERNEL_SIZE + KERNEL_STACK_SIZE (the max address can be used)
  *
@@ -188,6 +215,7 @@ VM* kvm_init(uint8_t code[], size_t len) {
 
   setup_regs(vm, entry);
   setup_sregs(vm);
+  setup_protected_mode(vm);
 
   return vm;
 }
@@ -210,6 +238,19 @@ void execute(VM* vm) {
       return;
     case KVM_EXIT_IO:
       if(!check_iopl(vm)) error("KVM_EXIT_SHUTDOWN\n");
+
+
+
+      if(vm->run->io.port == 0xE9){
+        char *p = (char *)vm->run;
+        fwrite(p + vm->run->io.data_offset,
+                vm->run->io.size, 1, stdout);
+        fflush(stdout);
+        continue;
+      }
+
+
+
       if(vm->run->io.port & HP_NR_MARK) {
         if(hp_handler(vm->run->io.port, vm) < 0) error("Hypercall failed\n");
       }

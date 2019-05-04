@@ -57,15 +57,15 @@ static void out(uint16_t port, uint32_t value) {
 void
 //kmain(void) {
 kmain(int a, int b, int c) {
-//	const char *p;
+	const char *p;
 //	char *test = "l";
-//	for (p = "Hello, world!\n"; *p; ++p){
+	for (p = "Hello, world!\n"; *p; ++p){
 //		hypercall(0xE9, *p);
-//		out(0xE9, *p);
+		out(0xE9, *p);
 //        while(1);
 //        out(0xE9, *test);
 //		while(1);
-//	}
+	}
 //	while(1);
 //	*(long *) 0x400 = 42;
 
