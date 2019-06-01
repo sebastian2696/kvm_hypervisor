@@ -12,7 +12,8 @@
 #include "hypercall.h"
 #include "elf_loader.h"
 
-#define PS_LIMIT (0x1000000)
+//#define PS_LIMIT (0x1000000)
+#define PS_LIMIT (0x10000000)
 //#define PS_LIMIT (0x80000000)
 #define KERNEL_STACK_SIZE (0x4000)
 #define MAX_KERNEL_SIZE (PS_LIMIT - 0x5000 - KERNEL_STACK_SIZE)
@@ -152,25 +153,36 @@ VM* kvm_init(uint8_t code[], size_t len) {
   char *mem = mmap(0,
     MEM_SIZE,
     PROT_READ | PROT_WRITE | PROT_EXEC,
-    MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE,
+    MAP_SHARED | MAP_ANONYMOUS,
     -1, 0);
   if(mem == NULL) pexit("mmap(MEM_SIZE)");
   int entry = 0x0010000c;//elf_entry_addr(hdr);
 //  int entry = 0x00100000;//elf_entry_addr(hdr);
 
-  //  printf("offset %u, roundup %u\n", offset, round_up_to_page(s.objsz));
+  printf("roundup %u\n", round_up_to_page(s[0].objsz));
 //  memcpy(mem + 0, s[0].mem, s[0].objsz);
   memcpy(mem + 0x00100000, s[0].mem, s[0].objsz);
 //  printf("offsetasd %u, roundup %u\n", offset, round_up_to_page(s.objsz));
 //  memset(mem + 0 + s[0].objsz, 0, s[0].sz - s[0].objsz);
   memset(mem + 0x00100000 + s[0].objsz, 0, s[0].sz - s[0].objsz);
 
-//  memcpy(mem + 0x00002000, s[1].mem, s[1].objsz);
-  memcpy(mem + 0x00102000, s[1].mem, s[1].objsz);
-//  memset(mem + 0x00002000 + s[1].objsz, 0, s[1].sz - s[1].objsz);
-  memset(mem + 0x00102000 + s[1].objsz, 0, s[1].sz - s[1].objsz);
+printf("TESTSSSS\n");
 
-  u8_t * add = mem + 0x10000c;
+//  memcpy(mem + 0x00002000, s[1].mem, s[1].objsz);
+  memcpy(mem + 0x0011d000, s[1].mem, s[1].objsz);
+
+printf("test...\n" ); 
+printf("vstart1 %p, sz %p, mem %p, entryaddr %p, mem %u\n", s[0].vstart, s[0].sz, s[0].mem, elf_entry_addr(hdr), s[0].mem);
+printf("objsz1 %p sz %p\n", s[0].objsz, s[0].sz);
+printf("vstart2 %p, sz %p, mem %p, entryaddr %p, mem %u\n", s[1].vstart, s[1].sz, s[1].mem, elf_entry_addr(hdr), s[1].mem);
+printf("objsz2 %p sz %p\n", s[1].objsz, s[1].sz);
+  
+  //  memset(mem + 0x00002000 + s[1].objsz, 0, s[1].sz - s[1].objsz);
+  memset(mem + 0x0011d000 + s[1].objsz, 0, s[1].sz - s[1].objsz);
+
+printf("TESTSSSS2\n");
+
+u8_t * add = mem + 0x10000c;
   u8_t * add2 = s[0].mem + 0x0c;
   printf("\t%x\t%x\t%x\n", *add, *add2, mem);
   printf("\t%x\t%x\t%x\n", *(add+1), *(add2+1), mem);
@@ -280,5 +292,6 @@ int main(int argc, char *argv[]) {
       (void*) MAX_KERNEL_SIZE);
 
   VM* vm = kvm_init(code, len);
+  printf("test 1\n");
   execute(vm);
 }
